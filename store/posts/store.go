@@ -107,7 +107,7 @@ func (s Posts) GetAllPosts() ([]models.Post, error) {
     return posts, nil
 }
 
-func (s Posts) UpdatePost(id int, post models.Post) error {
+func (s Posts) UpdatePost(id int, post models.Post) (models.Post, error) {
     currentTime := time.Now()
     query := "UPDATE posts SET title = ?, content = ?, author = ?, created_at = ?, updated_at = ? WHERE id = ?"
     
@@ -117,9 +117,15 @@ func (s Posts) UpdatePost(id int, post models.Post) error {
 
     _, err := s.db.Exec(query, post.Title, post.Content, post.Author, post.CreatedAt, currentTime, id)
     if err != nil {
-        return err
+        return models.Post{}, err
     }
-    return nil
+
+    updatedPost, err := s.GetPostByID(id)
+    if err != nil {
+        return models.Post{}, err
+    }
+    
+    return updatedPost, nil
 }
 
 func (s Posts) DeletePost(id int) error {
